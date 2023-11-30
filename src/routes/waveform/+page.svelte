@@ -94,7 +94,7 @@
 <article class="prose">
 	<h1>Waveform</h1>
 
-	<audio controls bind:this={audioRef} src="/audio/To Elsewhere.mp3" />
+	<audio controls bind:this={audioRef} src="audio/To Elsewhere.mp3" />
 	<Visualizer analyser={analyser}></Visualizer>
 
 	<h2 class="">Fundamental Waveform</h2>

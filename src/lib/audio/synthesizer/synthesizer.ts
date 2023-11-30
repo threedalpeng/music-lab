@@ -15,7 +15,6 @@ class SynthesizerSourceNode {
 
 	constructor(node: AudioScheduledSourceNode) {
 		this.node = node;
-		node.start();
 	}
 
 	start: () => void = () => {};
@@ -170,9 +169,13 @@ export class Synthesizer {
 
 	start(offset: number = 0) {
 		const when = this.#ctx.currentTime + offset;
-		this.#sources.forEach((node) => {
-			node.start();
-		});
+		if (!this.#playing) {
+			this.#sources.forEach((node) => {
+				node.node.start();
+				node.start();
+			});
+			this.#playing = true;
+		}
 		this.#gainNode.gain.setValueAtTime(0, when);
 		this.#gainNode.gain.linearRampToValueAtTime(this.#gain, when + this.#envelope.attack);
 		this.#gainNode.gain.exponentialRampToValueAtTime(

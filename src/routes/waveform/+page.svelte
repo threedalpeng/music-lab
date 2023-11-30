@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 	import WaveformBuilder from '$lib/audio/waveform/waveform-builder';
 	import { PITCH } from '$lib/audio/models/pitches';
+	import { drumkits } from '$lib/audio/drumkits/sounds';
 	
 	let audioRef: HTMLAudioElement;
 	let analyser: AnalyserNode;
@@ -147,4 +148,86 @@
 	>
 		<Icon src={Play}></Icon>
 	</button>
+
+	<h2 class="">Synthesize Drumkits</h2>
+	
+	<div>
+		<button
+			class="btn btn-square w-24 h-24"
+			on:click={() => {
+				if ($audioCtx == null) return;
+				const osc = $audioCtx.createOscillator();
+				const gain = $audioCtx.createGain();
+				osc.connect(gain);
+				gain.connect($audioCtx.destination);
+
+				const when = $audioCtx.currentTime;
+
+				osc.frequency.setValueAtTime(150, when);
+				gain.gain.setValueAtTime(1, when);
+
+				osc.frequency.exponentialRampToValueAtTime(0.01, when + 0.5);
+				gain.gain.exponentialRampToValueAtTime(0.01, when + 0.5);
+
+				osc.start(when);
+
+				osc.stop(when + 0.5);
+			}}
+		>
+			Kick
+		</button>
+		<button
+			class="btn btn-square w-24 h-24"
+			on:click={() => {
+				if ($audioCtx == null) return;
+				const context = $audioCtx;
+				const time = $audioCtx.currentTime;
+				let bufferSize = context.sampleRate;
+				let buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+				let output = buffer.getChannelData(0);
+
+				for (var i = 0; i < bufferSize; i++) {
+					output[i] = Math.random() * 2 - 1;
+				}
+
+				const noise = context.createBufferSource();
+				noise.buffer = buffer;
+				var noiseFilter = context.createBiquadFilter();
+				noiseFilter.type = 'highpass';
+				noiseFilter.frequency.value = 1000;
+				noise.connect(noiseFilter);
+				const noiseEnvelope = context.createGain();
+				noiseFilter.connect(noiseEnvelope);
+
+				noiseEnvelope.connect(context.destination);
+				const osc = context.createOscillator();
+				osc.type = 'triangle';
+
+				const oscEnvelope = context.createGain();
+				osc.connect(oscEnvelope);
+				oscEnvelope.connect(context.destination);
+				noiseEnvelope.gain.setValueAtTime(1, time);
+				noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+				noise.start(time);
+
+				osc.frequency.setValueAtTime(100, time);
+				oscEnvelope.gain.setValueAtTime(0.7, time);
+				oscEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+				osc.start(time);
+
+				osc.stop(time + 0.2);
+				noise.stop(time + 0.2);
+			}}
+		>
+			Snare
+		</button>
+		<button
+			class="btn btn-square w-24 h-24"
+			on:click={() => {
+				$drumkits?.hihat.play(0.03);
+			}}
+		>
+			Hi-Hat
+		</button>
+	</div>
 </article>

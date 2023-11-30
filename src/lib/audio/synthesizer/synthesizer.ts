@@ -174,9 +174,9 @@ export class Synthesizer {
 			node.start();
 		});
 		this.#gainNode.gain.setValueAtTime(0, when);
-		this.#gainNode.gain.linearRampToValueAtTime(this.gain, when + this.#envelope.attack);
+		this.#gainNode.gain.linearRampToValueAtTime(this.#gain, when + this.#envelope.attack);
 		this.#gainNode.gain.exponentialRampToValueAtTime(
-			this.#envelope.sustain * this.gain,
+			this.#envelope.sustain * this.#gain,
 			when + this.#envelope.attack + this.#envelope.decay
 		);
 	}
